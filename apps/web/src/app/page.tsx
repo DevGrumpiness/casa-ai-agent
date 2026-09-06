@@ -1,16 +1,42 @@
+"use client";
 import { Reservation } from "@/types/reservations";
+import { useEffect, useState } from "react";
 
 export default function Home() {
 
 
-  const reservations: Array<Reservation> = [];
+
+  useEffect(() => {
+    const fetchReservations = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/reservations", {
+          cache: "no-store",
+        })
+        if (!response.ok) {
+          const responseText = await response.text();
+          throw new Error(`Fehler beim Abrufen der Reservierungen: ${response.status} ${response.statusText} ${responseText}`);
+        }
+        const data: Array<Reservation> = await response.json();
+        console.log("Reservierungen:", data);
+        setReservations(data);
+      } catch (error) {
+        console.error("Fehler beim Abrufen der Reservierungen:", error);
+        setError("Reservierungen konnten nicht abgerufen werden. Bitte versuchen Sie es später erneut.");
+      }
+    };
+    fetchReservations();
+  }, []);
+
+
+  const [reservations, setReservations] = useState<Array<Reservation>>([]);
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center py-32 px-16 bg-white dark:bg-black sm:items-start">
+      <main className="flex flex-1 w-full max-w-4xl flex-col items-center py-32 px-16 bg-white dark:bg-black sm:items-start">
         <h1 className="text-2xl font-bold mb-4">Reservierungen</h1>
-        <table className="w-full border border-gray-300 dark:border-gray-700">
-          <thead>
+        <table className="w-full border border-gray-300 dark:border-gray-700 table-auto md:table-fixed ">
+          <thead className="bg-gray-200 dark:bg-gray-800">
             <tr>
               <th>Datum</th>
               <th>Uhrzeit</th>
@@ -20,7 +46,14 @@ export default function Home() {
             </tr>
           </thead>
           <tbody>
-            {reservations.length === 0 ? (
+            {error && (
+              <tr>
+                <td colSpan={5} className="text-center py-4 text-red-500">
+                  {error}
+                </td>
+              </tr>
+            )}
+            {reservations.length === 0 && !error ? (
               <tr>
                 <td colSpan={5} className="text-center py-4">
                   Keine Reservierungen vorhanden.
@@ -28,12 +61,12 @@ export default function Home() {
               </tr>
             ) : (
               reservations.map((reservation) => (
-                <tr key={reservation.id}>
-                  <td>{reservation.date}</td>
-                  <td>{reservation.time}</td>
-                  <td>{reservation.name}</td>
-                  <td>{reservation.people}</td>
-                  <td>{reservation.phoneNumber}</td>
+                <tr key={reservation.id} className="border-t border-gray-300 dark:border-gray-700">
+                  <td className="">{reservation.date}</td>
+                  <td className="">{reservation.time}</td>
+                  <td className="">{reservation.name}</td>
+                  <td className="">{reservation.party_size}</td>
+                  <td className="">{reservation.phone_number}</td>
                 </tr>
               ))
             )}

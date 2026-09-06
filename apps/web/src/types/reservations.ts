@@ -3,6 +3,6 @@ export interface Reservation {
     date: string;
     time: string;
     name: string;
-    people: number;
-    phoneNumber: string;
+    party_size: number;
+    phone_number: string;
 }
