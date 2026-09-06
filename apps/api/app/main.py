@@ -58,7 +58,7 @@ mock_reservations: list[Reservation] = [
 def get_reservations() -> list[Reservation]:
     return mock_reservations
 
-@app.post("/reservations", response_model=Reservation)
+@app.post("/reservations", response_model=Reservation, status_code=201)
 def create_reservation(reservation: ReservationCreate) -> Reservation:
 
     new_reservation = Reservation(

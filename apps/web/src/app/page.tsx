@@ -42,7 +42,7 @@ export default function Home() {
         {showReservationForm &&
           <ReservationForm
             onCreated={(reservation) => {
-              setReservations([...reservations, reservation]);
+              setReservations(current => [...current, reservation]);
               setShowReservationForm(false);
             }}
           />}
