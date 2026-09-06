@@ -1,10 +1,9 @@
 "use client";
 import { Reservation } from "@/types/reservations";
 import { useEffect, useState } from "react";
+import ReservationForm from "./reservationForm";
 
 export default function Home() {
-
-
 
   useEffect(() => {
     const fetchReservations = async () => {
@@ -29,12 +28,24 @@ export default function Home() {
 
 
   const [reservations, setReservations] = useState<Array<Reservation>>([]);
+  const [showReservationForm, setShowReservationForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex flex-1 w-full max-w-4xl flex-col items-center py-32 px-16 bg-white dark:bg-black sm:items-start">
         <h1 className="text-2xl font-bold mb-4">Reservierungen</h1>
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded mb-4 cursor-pointer hover:bg-blue-600 transition-colors"
+          onClick={() => !showReservationForm && setShowReservationForm(true)}>Neue Reservierung
+        </button>
+        {showReservationForm &&
+          <ReservationForm
+            onCreated={(reservation) => {
+              setReservations([...reservations, reservation]);
+              setShowReservationForm(false);
+            }}
+          />}
         <table className="w-full border border-gray-300 dark:border-gray-700 table-auto md:table-fixed ">
           <thead className="bg-gray-200 dark:bg-gray-800">
             <tr>
@@ -75,4 +86,7 @@ export default function Home() {
       </main>
     </div>
   );
+
+
 }
+
