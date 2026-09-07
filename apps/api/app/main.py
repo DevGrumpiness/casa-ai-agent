@@ -28,6 +28,7 @@ class ReservationCreate(BaseModel):
     name: str
     party_size: int
     phone_number: str
+    chef_override: bool = False
     comment: str | None = None
 
 class Reservation(BaseModel):
@@ -38,6 +39,7 @@ class Reservation(BaseModel):
     party_size: int
     phone_number: str
     comment: str | None = None
+    status: str
 
 @app.get("/reservations", response_model=list[Reservation])
 def get_reservations_endpoint() -> list[dict]:
@@ -55,14 +57,17 @@ def create_reservation(reservation: ReservationCreate) -> Reservation:
         party_size=reservation.party_size,
         phone_number=reservation.phone_number,
         comment=reservation.comment,
+        status="confirmed"
     )
-    insert_reservation(
-        id=new_reservation.id,
-        date=new_reservation.date,
-        time=new_reservation.time,
-        name=new_reservation.name,
-        party_size=new_reservation.party_size,
-        phone_number=new_reservation.phone_number,
-        comment=new_reservation.comment,
-    )
+    status = insert_reservation(
+            id=new_reservation.id,
+            date=new_reservation.date,
+            time=new_reservation.time,
+            name=new_reservation.name,
+            party_size=new_reservation.party_size,
+            phone_number=new_reservation.phone_number,
+            chef_override=reservation.chef_override,
+            comment=new_reservation.comment,
+        )
+    new_reservation.status = status
     return new_reservation

@@ -12,6 +12,7 @@ const ReservationForm = ({ onCreated }: ReservationFormProps) => {
     const [partySize, setPartySize] = useState(1);
     const [phoneNumber, setPhoneNumber] = useState("");
     const [comment, setComment] = useState("");
+    const [chefOverride, setChefOverride] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -22,6 +23,7 @@ const ReservationForm = ({ onCreated }: ReservationFormProps) => {
             name,
             party_size: partySize,
             phone_number: phoneNumber,
+            chef_override: chefOverride,
             comment,
         };
         const res = await fetch("http://localhost:8000/reservations", {
@@ -35,8 +37,8 @@ const ReservationForm = ({ onCreated }: ReservationFormProps) => {
             const createdReservation: Reservation = await res.json();
             onCreated(createdReservation);
         } else {
-            const errorText = await res.text();
-            setError(`Fehler beim Erstellen der Reservierung: ${res.status} ${res.statusText} ${errorText}`);
+            const errorText = await res.json();
+            setError(errorText.detail || "Fehler beim Erstellen der Reservierung");
         }
     };
 
@@ -109,9 +111,21 @@ const ReservationForm = ({ onCreated }: ReservationFormProps) => {
                         className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
                     />
                 </div>
+                <div className="flex flex-row gap-1">
+                    <label htmlFor="chefOverride">Chef override:</label>
+                    <input
+                        id="chefOverride"
+                        type="checkbox"
+                        checked={chefOverride}
+                        onChange={(e) => setChefOverride(e.target.checked)}
+                        className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+                    /><span className="text-sm text-gray-500 dark:text-gray-400"> (Nur für den Chef)</span>
+                </div>
                 <br />
                 <br />
                 <button type="submit" className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1 cursor-pointer hover:bg-blue-600 transition-colors">Reservierung speichern</button>
+                {error && <p className="text-red-500">{error}</p>}
+
             </form>
         </>
     );

@@ -60,14 +60,14 @@ export default function Home() {
           <tbody>
             {error && (
               <tr>
-                <td colSpan={5} className="text-center py-4 text-red-500">
+                <td colSpan={6} className="text-center py-4 text-red-500">
                   {error}
                 </td>
               </tr>
             )}
             {reservations.length === 0 && !error ? (
               <tr>
-                <td colSpan={5} className="text-center py-4">
+                <td colSpan={6} className="text-center py-4">
                   Keine Reservierungen vorhanden.
                 </td>
               </tr>
