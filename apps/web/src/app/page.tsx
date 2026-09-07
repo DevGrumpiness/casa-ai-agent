@@ -54,6 +54,7 @@ export default function Home() {
               <th>Name</th>
               <th>Personen</th>
               <th>Telefonnummer</th>
+              <th>Kommentar</th>
             </tr>
           </thead>
           <tbody>
@@ -78,6 +79,7 @@ export default function Home() {
                   <td className="">{reservation.name}</td>
                   <td className="">{reservation.party_size}</td>
                   <td className="">{reservation.phone_number}</td>
+                  <td className="">{reservation.comment}</td>
                 </tr>
               ))
             )}

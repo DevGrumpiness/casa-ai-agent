@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from uuid import uuid4
+from app.reservations_db import insert_reservation, get_reservations
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,6 +28,7 @@ class ReservationCreate(BaseModel):
     name: str
     party_size: int
     phone_number: str
+    comment: str | None = None
 
 class Reservation(BaseModel):
     id: str
@@ -35,29 +37,12 @@ class Reservation(BaseModel):
     name: str
     party_size: int
     phone_number: str
-    
-mock_reservations: list[Reservation] = [
-        Reservation(
-            id="1",
-            date="25.07.2026",
-            time="18:00",
-            name="SAbine",
-            party_size=4,
-            phone_number="123-456-7890",
-        ),
-         Reservation(
-            id="2",
-            date="25.07.2025",
-            time="18:10",
-            name="Max Mustermännchen",
-            party_size=1,
-            phone_number="123-456-7890",
-         )
-    ]
+    comment: str | None = None
 
 @app.get("/reservations", response_model=list[Reservation])
-def get_reservations() -> list[Reservation]:
-    return mock_reservations
+def get_reservations_endpoint() -> list[dict]:
+    reservations = get_reservations()
+    return reservations
 
 @app.post("/reservations", response_model=Reservation, status_code=201)
 def create_reservation(reservation: ReservationCreate) -> Reservation:
@@ -69,6 +54,15 @@ def create_reservation(reservation: ReservationCreate) -> Reservation:
         name=reservation.name,
         party_size=reservation.party_size,
         phone_number=reservation.phone_number,
+        comment=reservation.comment,
     )
-    mock_reservations.append(new_reservation)
+    insert_reservation(
+        id=new_reservation.id,
+        date=new_reservation.date,
+        time=new_reservation.time,
+        name=new_reservation.name,
+        party_size=new_reservation.party_size,
+        phone_number=new_reservation.phone_number,
+        comment=new_reservation.comment,
+    )
     return new_reservation

@@ -11,6 +11,7 @@ const ReservationForm = ({ onCreated }: ReservationFormProps) => {
     const [name, setName] = useState("");
     const [partySize, setPartySize] = useState(1);
     const [phoneNumber, setPhoneNumber] = useState("");
+    const [comment, setComment] = useState("");
     const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -21,6 +22,7 @@ const ReservationForm = ({ onCreated }: ReservationFormProps) => {
             name,
             party_size: partySize,
             phone_number: phoneNumber,
+            comment,
         };
         const res = await fetch("http://localhost:8000/reservations", {
             method: "POST",
@@ -96,6 +98,15 @@ const ReservationForm = ({ onCreated }: ReservationFormProps) => {
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
                         required
+                    />
+                </div>
+                <div className="flex flex-col gap-1">
+                    <label htmlFor="comment">Kommentar:</label>
+                    <textarea
+                        id="comment"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
                     />
                 </div>
                 <br />
