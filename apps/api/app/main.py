@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from uuid import uuid4
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -62,7 +63,7 @@ def get_reservations() -> list[Reservation]:
 def create_reservation(reservation: ReservationCreate) -> Reservation:
 
     new_reservation = Reservation(
-        id="3",
+        id=str(uuid4()),
         date=reservation.date,
         time=reservation.time,
         name=reservation.name,
