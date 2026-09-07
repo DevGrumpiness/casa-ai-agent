@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:17
+
+    environment:
+      POSTGRES_DB: casa_ai
+      POSTGRES_USER: casa_ai
+      POSTGRES_PASSWORD: casa_ai
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
