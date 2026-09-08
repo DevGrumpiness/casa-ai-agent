@@ -8,7 +8,7 @@ export default function Home() {
   useEffect(() => {
     const fetchReservations = async () => {
       try {
-        const response = await fetch("http://localhost:8000/reservations", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reservations`, {
           cache: "no-store",
         })
         if (!response.ok) {

@@ -1,0 +1,92 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "reservation",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6a57588e-519f-4ee8-98c1-c5e597a943e2",
+      "name": "Webhook",
+      "webhookId": "700f40ab-486e-47a0-9657-92a303e31894"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/reservations",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{$json.body.name}}"
+            },
+            {
+              "name": "party_size",
+              "value": "={{Number($json.body.party_size)}}"
+            },
+            {
+              "name": "date",
+              "value": "={{$json.body.date}}"
+            },
+            {
+              "name": "time",
+              "value": "={{$json.body.time}}"
+            },
+            {
+              "name": "phone_number",
+              "value": "={{$json.body.phone_number}}"
+            },
+            {
+              "name": "comment",
+              "value": "={{$json.body.comment}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "661c3f28-ba5a-498d-808c-951b3df3fe98",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ed1c9d9c-0250-49f3-9c52-e5afc0de6c18",
+  "meta": {
+    "instanceId": "587f25d249fb10dea247122729ecc9cc86b5f6e675bdabcf1a0f4e20fc4e5e37"
+  },
+  "nodeGroups": [],
+  "id": "Rde6T8lbyRaWbjtU",
+  "tags": []
+}

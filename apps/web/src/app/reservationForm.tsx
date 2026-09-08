@@ -26,7 +26,7 @@ const ReservationForm = ({ onCreated }: ReservationFormProps) => {
             chef_override: chefOverride,
             comment,
         };
-        const res = await fetch("http://localhost:8000/reservations", {
+        const res = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL!, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
