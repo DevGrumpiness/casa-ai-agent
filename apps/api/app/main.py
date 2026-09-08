@@ -48,7 +48,7 @@ def get_reservations_endpoint() -> list[dict]:
 
 @app.post("/reservations", response_model=Reservation, status_code=201)
 def create_reservation(reservation: ReservationCreate) -> Reservation:
-
+    print(repr(reservation.date), len(reservation.date))
     new_reservation = Reservation(
         id=str(uuid4()),
         date=reservation.date,
