@@ -1,12 +1,16 @@
 import { Reservation } from "@/types/reservations";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ReservationFormProps {
+    initialDate?: string;
     onCreated: (reservation: Reservation) => void;
 }
 
-const ReservationForm = ({ onCreated }: ReservationFormProps) => {
-    const [date, setDate] = useState("");
+const ReservationForm = ({
+    initialDate = "",
+    onCreated,
+}: ReservationFormProps) => {
+    const [date, setDate] = useState(initialDate);
     const [time, setTime] = useState("");
     const [name, setName] = useState("");
     const [partySize, setPartySize] = useState(1);
@@ -15,8 +19,25 @@ const ReservationForm = ({ onCreated }: ReservationFormProps) => {
     const [chefOverride, setChefOverride] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    useEffect(() => {
+        setDate(initialDate);
+    }, [initialDate]);
+
+    const formatDate = (date: string) => {
+        if (!date) {
+            return "";
+        }
+
+        const [year, month, day] = date.slice(0, 10).split("-");
+
+        return `${day}.${month}.${year}`;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        setError(null);
+
         const newReservation = {
             date,
             time,
@@ -26,108 +47,235 @@ const ReservationForm = ({ onCreated }: ReservationFormProps) => {
             chef_override: chefOverride,
             comment,
         };
-        const res = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL!, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(newReservation),
-        });
-        if (res.ok) {
-            const createdReservation: Reservation = await res.json();
+
+        try {
+            const res = await fetch(
+                process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL!,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(newReservation),
+                }
+            );
+
+            if (!res.ok) {
+                const errorResponse = await res.json();
+
+                setError(
+                    errorResponse.detail ||
+                    "Fehler beim Erstellen der Reservierung"
+                );
+
+                return;
+            }
+
+            const createdReservation: Reservation =
+                await res.json();
+
             onCreated(createdReservation);
-        } else {
-            const errorText = await res.json();
-            setError(errorText.detail || "Fehler beim Erstellen der Reservierung");
+        } catch (error) {
+            console.error(
+                "Fehler beim Erstellen der Reservierung:",
+                error
+            );
+
+            setError(
+                "Reservierung konnte nicht erstellt werden."
+            );
         }
     };
 
-    return (
-        <>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-2 mb-4 bg-gray-100 dark:bg-gray-900 p-4 rounded shadow-md font-sans dark:text-white max-w-4xl w-full">
+    const inputClassName =
+        "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200";
 
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="date">Datum:</label>
-                    <input
-                        id="date"
-                        type="date"
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
-                        required
-                    />
+    const labelClassName =
+        "mb-1.5 block text-sm font-medium text-zinc-700";
+
+    return (
+        <div>
+            <div className="mb-6">
+                <h3 className="text-lg font-semibold text-zinc-900">
+                    Neue Reservierung
+                </h3>
+
+                {date && (
+                    <p className="mt-1 text-sm text-zinc-500">
+                        Reservierung für den {formatDate(date)}
+                    </p>
+                )}
+            </div>
+
+            <form
+                onSubmit={handleSubmit}
+                className="grid gap-5"
+            >
+                <div className="grid gap-5 md:grid-cols-2">
+                    <div>
+                        <label
+                            htmlFor="date"
+                            className={labelClassName}
+                        >
+                            Datum
+                        </label>
+
+                        <input
+                            id="date"
+                            type="date"
+                            value={date}
+                            onChange={(e) =>
+                                setDate(e.target.value)
+                            }
+                            className={inputClassName}
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            htmlFor="time"
+                            className={labelClassName}
+                        >
+                            Uhrzeit
+                        </label>
+
+                        <input
+                            id="time"
+                            type="time"
+                            value={time}
+                            onChange={(e) =>
+                                setTime(e.target.value)
+                            }
+                            className={inputClassName}
+                            required
+                        />
+                    </div>
                 </div>
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="time">Uhrzeit:</label>
-                    <input
-                        id="time"
-                        type="time"
-                        value={time}
-                        onChange={(e) => setTime(e.target.value)}
-                        className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
-                        required
-                    />
+
+                <div className="grid gap-5 md:grid-cols-2">
+                    <div>
+                        <label
+                            htmlFor="name"
+                            className={labelClassName}
+                        >
+                            Name
+                        </label>
+
+                        <input
+                            id="name"
+                            type="text"
+                            value={name}
+                            onChange={(e) =>
+                                setName(e.target.value)
+                            }
+                            className={inputClassName}
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            htmlFor="partySize"
+                            className={labelClassName}
+                        >
+                            Personen
+                        </label>
+
+                        <input
+                            id="partySize"
+                            type="number"
+                            value={partySize}
+                            onChange={(e) =>
+                                setPartySize(
+                                    Number(e.target.value)
+                                )
+                            }
+                            className={inputClassName}
+                            required
+                            min={1}
+                        />
+                    </div>
                 </div>
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="name">Name:</label>
-                    <input
-                        id="name"
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
-                        required
-                    />
-                </div>
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="partySize">Personen:</label>
-                    <input
-                        id="partySize"
-                        type="number"
-                        value={partySize}
-                        onChange={(e) => setPartySize(Number(e.target.value))}
-                        className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
-                        required
-                        min={1}
-                    />
-                </div>
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="phoneNumber">Telefonnummer:</label>
+
+                <div>
+                    <label
+                        htmlFor="phoneNumber"
+                        className={labelClassName}
+                    >
+                        Telefonnummer
+                    </label>
+
                     <input
                         id="phoneNumber"
-                        type="text"
+                        type="tel"
                         value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+                        onChange={(e) =>
+                            setPhoneNumber(e.target.value)
+                        }
+                        className={inputClassName}
                         required
                     />
                 </div>
-                <div className="flex flex-col gap-1">
-                    <label htmlFor="comment">Kommentar:</label>
+
+                <div>
+                    <label
+                        htmlFor="comment"
+                        className={labelClassName}
+                    >
+                        Kommentar
+                    </label>
+
                     <textarea
                         id="comment"
                         value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                        className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+                        onChange={(e) =>
+                            setComment(e.target.value)
+                        }
+                        className={`${inputClassName} min-h-24 resize-y`}
                     />
                 </div>
-                <div className="flex flex-row gap-1">
-                    <label htmlFor="chefOverride">Chef override:</label>
+
+                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
                     <input
                         id="chefOverride"
                         type="checkbox"
                         checked={chefOverride}
-                        onChange={(e) => setChefOverride(e.target.checked)}
-                        className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
-                    /><span className="text-sm text-gray-500 dark:text-gray-400"> (Nur für den Chef)</span>
-                </div>
-                <br />
-                <br />
-                <button type="submit" className="border border-gray-300 dark:border-gray-700 rounded px-2 py-1 cursor-pointer hover:bg-blue-600 transition-colors">Reservierung speichern</button>
-                {error && <p className="text-red-500">{error}</p>}
+                        onChange={(e) =>
+                            setChefOverride(
+                                e.target.checked
+                            )
+                        }
+                        className="h-4 w-4"
+                    />
 
+                    <span>
+                        <span className="block text-sm font-medium text-zinc-800">
+                            Chef-Override
+                        </span>
+
+                        <span className="block text-xs text-zinc-500">
+                            (darf nur von Chef gesetzt werden)
+                        </span>
+                    </span>
+                </label>
+
+                {error && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        {error}
+                    </div>
+                )}
+
+                <div className="flex justify-end">
+                    <button
+                        type="submit"
+                        className="rounded-lg bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700"
+                    >
+                        Reservierung speichern
+                    </button>
+                </div>
             </form>
-        </>
+        </div>
     );
 };
 
