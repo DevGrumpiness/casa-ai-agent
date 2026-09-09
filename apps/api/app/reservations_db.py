@@ -55,3 +55,17 @@ def get_reservation_sum_by_date(date: str) -> int:
             if result is None or result[0] is None:
                 return 0
             return result[0]
+
+def update_reservation_status(id: str, status: str) -> bool:
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE reservations
+                SET status = %s
+                WHERE id = %s
+                """,
+                (status, id),
+            )
+
+            return cursor.rowcount > 0
