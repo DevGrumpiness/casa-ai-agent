@@ -1,0 +1,65 @@
+{
+    "type": "apiRequest",
+    "function": {
+        "name": "api_request_tool"
+    },
+    "messages": [
+        {
+            "type": "request-start",
+            "blocking": false
+        }
+    ],
+    "name": "setReservation",
+    "url": "${VAPI_RESERVATION_WEBHOOK_URL}",
+    "method": "POST",
+    "body": {
+        "type": "object",
+        "required": [
+            "party_size",
+            "phone_number",
+            "name",
+            "time",
+            "date"
+        ],
+        "properties": {
+            "date": {
+                "description": "Reservation date in YYYY-MM-DD format.",
+                "type": "string",
+                "default": ""
+            },
+            "name": {
+                "description": "",
+                "type": "string",
+                "default": ""
+            },
+            "time": {
+                "description": "Reservation time in HH:MM 24-hour format.",
+                "type": "string",
+                "default": ""
+            },
+            "comment": {
+                "description": "",
+                "type": "string",
+                "default": ""
+            },
+            "party_size": {
+                "description": "",
+                "type": "number",
+                "default": ""
+            },
+            "phone_number": {
+                "description": "",
+                "type": "string",
+                "default": ""
+            }
+        },
+        "additionalProperties": false
+    },
+    "variableExtractionPlan": {
+        "schema": {
+            "type": "object",
+            "required": [],
+            "properties": {}
+        }
+    }
+}

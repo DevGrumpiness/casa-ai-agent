@@ -1,0 +1,94 @@
+{
+    "compliancePlan": {
+        "pciEnabled": false
+    },
+    "backgroundDenoisingEnabled": false,
+    "updatedAt": "2026-09-08T18:12:11.386Z",
+    "createdAt": "2026-09-08T15:50:03.338Z",
+    "orgId": "51aa3ce4-3550-449e-b45f-025acf56bf5b",
+    "id": "295074e5-2f4e-4265-9f2c-42cbbb466bca",
+    "metadata": {
+        "preset": "balanced:1"
+    },
+    "endCallPhrases": [
+        "Auf Wiederhören",
+        "Tschüss und auf Wiederhören",
+        "Danke das war alles",
+        "Vielen Dank das war alles",
+        "Das wäre alles danke",
+        "Dann bis bald",
+        "Bis zum nächsten Mal",
+        "Schönen Tag noch auf Wiederhören",
+        "Okay tschüss",
+        "bis dann",
+        "bis später",
+        "bis bald",
+        "byebye",
+        "hau rein"
+    ],
+    "endCallMessage": "Vielen Dank für Ihren Anruf beim Casa Vazquez Münster. Auf Wiederhören!",
+    "voicemailMessage": "Hallo, hier ist das Casa Vazquez Münster. Bitte rufen Sie uns zurück oder versuchen Sie es später noch einmal.",
+    "firstMessage": "Hola, hier ist das Casa Vazquez Münster. Wie kann ich helfen?",
+    "transcriber": {
+        "languages": [
+            "en",
+            "de"
+        ],
+        "language": "en",
+        "model": "stt-rt-v5",
+        "provider": "soniox"
+    },
+    "name": "Casa Vazquez Reservation Agent",
+    "serverMessages": [
+        "conversation-update",
+        "end-of-call-report",
+        "function-call",
+        "hang",
+        "speech-update",
+        "status-update",
+        "tool-calls",
+        "transfer-destination-request",
+        "handoff-destination-request",
+        "user-interrupted",
+        "assistant.started"
+    ],
+    "clientMessages": [
+        "conversation-update",
+        "function-call",
+        "hang",
+        "model-output",
+        "speech-update",
+        "status-update",
+        "transfer-update",
+        "transcript",
+        "tool-calls",
+        "user-interrupted",
+        "voice-input",
+        "workflow.node.started",
+        "assistant.started"
+    ],
+    "hipaaEnabled": false,
+    "voice": {
+        "version": "2",
+        "voiceId": "Savannah",
+        "provider": "vapi"
+    },
+    "model": {
+        "model": "gpt-4.1",
+        "toolIds": [
+            "17ec48a8-2a22-4251-9ddc-4728d5123a09"
+        ],
+        "provider": "openai",
+        "messages": [
+            {
+                "content": "You are the telephone reservation assistant for Casa Vazquez, a tapas and cocktail bar in Münster, Germany.\n\nAlways speak German with the caller unless the caller explicitly asks to speak another language.\n\nYour main task is to take table reservations.\n\nFor a reservation, collect:\n- date\n- time\n- guest name\n- number of guests\n- optional comment or special request\n\nBe friendly, concise and natural. This is a phone conversation, so avoid long explanations.\n\nBefore submitting a reservation, briefly repeat the reservation details and ask the caller to confirm them.\n\nDo not claim that a reservation has been confirmed until the reservation tool has returned a successful result.\n\nIf the tool returns status \"confirmed\", tell the caller that the reservation is confirmed.\nIf the tool returns status \"pending\", explain that the reservation still needs to be reviewed by the restaurant.\n\nNever invent availability or reservation data.\n\nWhen all required reservation details have been collected and the caller has confirmed them, call the setReservation tool.\n\nRequired details:\n- date\n- time\n- name\n- party_size\n- phone_number\n\nPass any additional request as comment.\n\nDo not call setReservation before the caller has confirmed the reservation details.\n\nAfter the tool returns:\n- If status is \"confirmed\", tell the caller the reservation is confirmed.\n- If status is \"pending\", explain that the reservation still needs to be reviewed by the restaurant.\n- If the tool fails, do not claim that the reservation was created. Apologize and explain that the reservation could not be saved.",
+                "role": "system"
+            }
+        ]
+    },
+    "startSpeakingPlan": {
+        "waitSeconds": 0.4,
+        "smartEndpointingEnabled": "livekit"
+    },
+    "latestVersion": "v4"
+}
