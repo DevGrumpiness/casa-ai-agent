@@ -3,10 +3,6 @@
         "pciEnabled": false
     },
     "backgroundDenoisingEnabled": false,
-    "updatedAt": "2026-09-08T18:12:11.386Z",
-    "createdAt": "2026-09-08T15:50:03.338Z",
-    "orgId": "51aa3ce4-3550-449e-b45f-025acf56bf5b",
-    "id": "295074e5-2f4e-4265-9f2c-42cbbb466bca",
     "metadata": {
         "preset": "balanced:1"
     },
@@ -89,6 +85,5 @@
     "startSpeakingPlan": {
         "waitSeconds": 0.4,
         "smartEndpointingEnabled": "livekit"
-    },
-    "latestVersion": "v4"
+    }
 }
