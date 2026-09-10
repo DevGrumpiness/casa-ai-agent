@@ -12,7 +12,8 @@ def init_db():
                     name VARCHAR(100) NOT NULL,
                     party_size INTEGER NOT NULL,
                     phone_number VARCHAR(30) NOT NULL,
-                    comment VARCHAR(255)
+                    comment VARCHAR(255),
+                    status VARCHAR(20) NOT NULL DEFAULT 'pending'
                 )
                 """
             )
