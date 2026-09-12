@@ -22,26 +22,29 @@ const VoiceAgentCard = () => {
           </h2>
 
           <p className="mt-1 max-w-md text-sm text-zinc-500">
-            The agent accepts real phone calls and creates reservations
-            autonomously.
+            Call the AI agent and make a real reservation.
           </p>
 
           {phoneHint && (
-            <p className="mt-3 font-mono text-base tracking-wide text-zinc-700">
+            <p className="mt-3 inline-block rounded-lg bg-zinc-50 px-3 py-2 font-mono text-xl font-semibold tracking-widest text-zinc-900">
               {phoneHint}
             </p>
           )}
         </div>
 
         {contactUrl && (
-          <a
-            href={contactUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700"
-          >
-            Get demo access
-          </a>
+          <div className="text-right">
+            <p className="text-xs text-zinc-500">Want to try it?</p>
+
+            <a
+              href={contactUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-zinc-900 underline decoration-zinc-300 underline-offset-4 transition hover:text-zinc-600"
+            >
+              Request the demo number →
+            </a>
+          </div>
         )}
       </div>
     </section>
