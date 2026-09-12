@@ -44,6 +44,16 @@ def reset_login_rate_limiter() -> None:
     _failed_login_attempts.clear()
 
 
+def is_trusted_bff_request(request: Request) -> bool:
+    if not settings.bff_proxy_secret:
+        return False
+
+    provided = request.headers.get("x-bff-secret")
+    if not provided:
+        return False
+
+    return hmac.compare_digest(provided, settings.bff_proxy_secret)
+
 
 def hash_password(password: str, *, iterations: int = 260_000) -> str:
     salt = os.urandom(16)

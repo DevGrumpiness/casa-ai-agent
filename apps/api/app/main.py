@@ -12,6 +12,7 @@ from app.auth import (
     create_session_token,
     is_login_rate_limited,
     is_request_authenticated,
+    is_trusted_bff_request,
     register_failed_login,
     verify_password,
 )
@@ -136,8 +137,9 @@ def change_reservation_status(
 @app.post("/auth/login")
 def login(payload: LoginRequest, request: Request, response: Response) -> dict[str, bool]:
     client_ip = request.client.host if request.client else "unknown"
+    trusted_bff = is_trusted_bff_request(request)
 
-    if is_login_rate_limited(client_ip):
+    if not trusted_bff and is_login_rate_limited(client_ip):
         raise HTTPException(
             status_code=429,
             detail="Zu viele Versuche. Bitte später erneut versuchen.",
@@ -146,10 +148,12 @@ def login(payload: LoginRequest, request: Request, response: Response) -> dict[s
     if not settings.admin_password_hash or not verify_password(
         payload.password, settings.admin_password_hash
     ):
-        register_failed_login(client_ip)
+        if not trusted_bff:
+            register_failed_login(client_ip)
         raise HTTPException(status_code=401, detail="Ungültige Anmeldedaten")
 
-    clear_failed_logins(client_ip)
+    if not trusted_bff:
+        clear_failed_logins(client_ip)
 
     token = create_session_token(secret=settings.session_secret)
     response.set_cookie(
