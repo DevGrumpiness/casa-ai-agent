@@ -1,7 +1,7 @@
 "use client";
 
 import { Reservation } from "@/types/reservations";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import AdminUnlockModal from "./adminUnlockModal";
 import ReservationForm from "./reservationForm";
 import VoiceAgentCard from "./voiceAgentCard";
@@ -16,6 +16,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -187,36 +189,70 @@ export default function Home() {
     return `${day}.${month}.${year}`;
   };
 
+  const addDays = (date: string, delta: number) => {
+    const base = date ? new Date(`${date}T00:00:00`) : new Date();
+    base.setDate(base.getDate() + delta);
+    return base.toISOString().slice(0, 10);
+  };
+
+  const handleTouchStart = (event: React.TouchEvent) => {
+    touchStartX.current = event.touches[0].clientX;
+    touchStartY.current = event.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) {
+      return;
+    }
+
+    const deltaX = event.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = event.changedTouches[0].clientY - touchStartY.current;
+
+    touchStartX.current = null;
+    touchStartY.current = null;
+
+    const SWIPE_THRESHOLD = 60;
+
+    if (
+      Math.abs(deltaX) < SWIPE_THRESHOLD ||
+      Math.abs(deltaX) < Math.abs(deltaY)
+    ) {
+      return;
+    }
+
+    handleDateChange(addDays(selectedDate, deltaX < 0 ? 1 : -1));
+  };
+
   return (
-    <div className="min-h-screen bg-zinc-100 text-zinc-900">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
       <main className="mx-auto w-full max-w-7xl px-6 py-10">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">
             Reservierungen
           </h1>
 
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-zinc-400">
             Casa Vazquez
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="mb-6 rounded-lg border border-red-900/50 bg-red-950/40 px-4 py-3 text-sm text-red-300">
             {error}
           </div>
         )}
 
         <VoiceAgentCard />
 
-        <section className="mb-8 flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <section className="mb-8 flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-semibold text-zinc-900">
+            <p className="text-sm font-semibold text-zinc-100">
               {isAuthenticated
                 ? "Personal data unlocked"
                 : "Personal data protected"}
             </p>
 
-            <p className="mt-0.5 text-xs text-zinc-500">
+            <p className="mt-0.5 text-xs text-zinc-400">
               {isAuthenticated
                 ? "Guest names, phone numbers and comments are shown in full."
                 : "Unlock to view guest names, phone numbers and comments."}
@@ -226,14 +262,14 @@ export default function Home() {
           {isAuthenticated ? (
             <button
               onClick={handleLock}
-              className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+              className="rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:bg-zinc-800"
             >
               Lock
             </button>
           ) : (
             <button
               onClick={() => setShowUnlockModal(true)}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700"
+              className="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-white"
             >
               Unlock personal data
             </button>
@@ -246,20 +282,20 @@ export default function Home() {
               Ausstehende Reservierungen
             </h2>
 
-            <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">
+            <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-semibold text-amber-400">
               {pendingReservations.length}
             </span>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-xl border border-amber-900/40 bg-zinc-900 shadow-sm">
             {pendingReservations.length === 0 ? (
-              <div className="px-6 py-6 text-sm text-zinc-500">
+              <div className="px-6 py-6 text-sm text-zinc-400">
                 Keine Reservierungen müssen bestätigt werden.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-amber-50 text-xs uppercase text-zinc-500">
+                  <thead className="bg-amber-500/10 text-xs uppercase text-zinc-400">
                     <tr>
                       <th className="px-4 py-3">Datum</th>
                       <th className="px-4 py-3">Uhrzeit</th>
@@ -271,11 +307,11 @@ export default function Home() {
                     </tr>
                   </thead>
 
-                  <tbody className="divide-y divide-zinc-100">
+                  <tbody className="divide-y divide-zinc-800">
                     {pendingReservations.map((reservation) => (
                       <tr
                         key={reservation.id}
-                        className="hover:bg-zinc-50"
+                        className="hover:bg-zinc-800/60"
                       >
                         <td className="px-4 py-3 font-medium">
                           {formatDate(reservation.date)}
@@ -289,7 +325,7 @@ export default function Home() {
                           className={
                             isAuthenticated
                               ? "px-4 py-3"
-                              : "px-4 py-3 font-mono text-zinc-400"
+                              : "px-4 py-3 font-mono text-zinc-500"
                           }
                         >
                           {reservation.name}
@@ -303,13 +339,13 @@ export default function Home() {
                           className={
                             isAuthenticated
                               ? "px-4 py-3"
-                              : "px-4 py-3 font-mono text-zinc-400"
+                              : "px-4 py-3 font-mono text-zinc-500"
                           }
                         >
                           {reservation.phone_number}
                         </td>
 
-                        <td className="max-w-xs truncate px-4 py-3 text-zinc-500">
+                        <td className="max-w-xs truncate px-4 py-3 text-zinc-400">
                           {isAuthenticated ? reservation.comment || "–" : "🔒"}
                         </td>
 
@@ -318,7 +354,7 @@ export default function Home() {
                             onClick={() =>
                               toggleReservationStatus(reservation)
                             }
-                            className="rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-green-700"
+                            className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-emerald-500"
                           >
                             Bestätigen
                           </button>
@@ -332,19 +368,26 @@ export default function Home() {
           </div>
         </section>
 
-        <section>
+        <section
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold">
                 Reservierungen
               </h2>
 
-              <p className="mt-1 text-sm text-zinc-500">
+              <p className="mt-1 text-sm text-zinc-400">
                 {selectedDate
                   ? `${filteredReservations.length} Reservierungen am ${formatDate(
                     selectedDate
                   )}`
                   : `${filteredReservations.length} Reservierungen insgesamt`}
+              </p>
+
+              <p className="mt-1 text-xs text-zinc-500">
+                Auf Tablet: nach links oder rechts wischen, um den Tag zu wechseln.
               </p>
             </div>
 
@@ -352,7 +395,7 @@ export default function Home() {
               <div>
                 <label
                   htmlFor="reservation-date"
-                  className="mb-1 block text-xs font-medium text-zinc-600"
+                  className="mb-1 block text-xs font-medium text-zinc-400"
                 >
                   Datum
                 </label>
@@ -364,14 +407,14 @@ export default function Home() {
                   onChange={(event) =>
                     handleDateChange(event.target.value)
                   }
-                  className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+                  className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 outline-none transition [color-scheme:dark] focus:border-zinc-500 focus:ring-2 focus:ring-zinc-700"
                 />
               </div>
 
               {selectedDate && (
                 <button
                   onClick={() => setShowReservationForm(true)}
-                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700"
+                  className="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-white"
                 >
                   Neue Reservierung
                 </button>
@@ -380,7 +423,7 @@ export default function Home() {
               {selectedDate && (
                 <button
                   onClick={() => handleDateChange("")}
-                  className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm transition hover:bg-zinc-50"
+                  className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-200 transition hover:bg-zinc-800"
                 >
                   Alle Tage
                 </button>
@@ -389,7 +432,7 @@ export default function Home() {
           </div>
 
           {showReservationForm && selectedDate && (
-            <div className="mb-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-sm">
               <ReservationForm
                 initialDate={selectedDate}
                 onCreated={(reservation) => {
@@ -403,10 +446,10 @@ export default function Home() {
             </div>
           )}
 
-          <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-zinc-50 text-xs uppercase text-zinc-500">
+                <thead className="bg-zinc-800/60 text-xs uppercase text-zinc-400">
                   <tr>
                     <th className="px-4 py-3">Datum</th>
                     <th className="px-4 py-3">Uhrzeit</th>
@@ -418,12 +461,12 @@ export default function Home() {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-zinc-100">
+                <tbody className="divide-y divide-zinc-800">
                   {paginatedReservations.length === 0 ? (
                     <tr>
                       <td
                         colSpan={7}
-                        className="px-4 py-10 text-center text-zinc-500"
+                        className="px-4 py-10 text-center text-zinc-400"
                       >
                         {selectedDate
                           ? "Keine Reservierungen für dieses Datum."
@@ -434,7 +477,7 @@ export default function Home() {
                     paginatedReservations.map((reservation) => (
                       <tr
                         key={reservation.id}
-                        className="hover:bg-zinc-50"
+                        className="hover:bg-zinc-800/60"
                       >
                         <td className="px-4 py-3 font-medium">
                           {formatDate(reservation.date)}
@@ -448,7 +491,7 @@ export default function Home() {
                           className={
                             isAuthenticated
                               ? "px-4 py-3"
-                              : "px-4 py-3 font-mono text-zinc-400"
+                              : "px-4 py-3 font-mono text-zinc-500"
                           }
                         >
                           {reservation.name}
@@ -462,23 +505,23 @@ export default function Home() {
                           className={
                             isAuthenticated
                               ? "px-4 py-3"
-                              : "px-4 py-3 font-mono text-zinc-400"
+                              : "px-4 py-3 font-mono text-zinc-500"
                           }
                         >
                           {reservation.phone_number}
                         </td>
 
-                        <td className="max-w-xs truncate px-4 py-3 text-zinc-500">
+                        <td className="max-w-xs truncate px-4 py-3 text-zinc-400">
                           {isAuthenticated ? reservation.comment || "–" : "🔒"}
                         </td>
 
                         <td className="px-4 py-3">
                           {reservation.status === "pending" ? (
-                            <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700">
+                            <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-medium text-amber-400">
                               Ausstehend
                             </span>
                           ) : (
-                            <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
+                            <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-400">
                               Bestätigt
                             </span>
                           )}
@@ -491,8 +534,8 @@ export default function Home() {
             </div>
 
             {filteredReservations.length > ITEMS_PER_PAGE && (
-              <div className="flex items-center justify-between border-t border-zinc-200 px-4 py-3">
-                <span className="text-sm text-zinc-500">
+              <div className="flex items-center justify-between border-t border-zinc-800 px-4 py-3">
+                <span className="text-sm text-zinc-400">
                   Seite {currentPage} von {totalPages}
                 </span>
 
@@ -502,7 +545,7 @@ export default function Home() {
                     onClick={() =>
                       setCurrentPage((page) => page - 1)
                     }
-                    className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Zurück
                   </button>
@@ -512,7 +555,7 @@ export default function Home() {
                     onClick={() =>
                       setCurrentPage((page) => page + 1)
                     }
-                    className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-40"
+                    className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Weiter
                   </button>

@@ -88,20 +88,20 @@ const ReservationForm = ({
     };
 
     const inputClassName =
-        "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none transition focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200";
+        "w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-zinc-100 outline-none transition [color-scheme:dark] focus:border-zinc-500 focus:ring-2 focus:ring-zinc-700";
 
     const labelClassName =
-        "mb-1.5 block text-sm font-medium text-zinc-700";
+        "mb-1.5 block text-sm font-medium text-zinc-300";
 
     return (
         <div>
             <div className="mb-6">
-                <h3 className="text-lg font-semibold text-zinc-900">
+                <h3 className="text-lg font-semibold text-zinc-100">
                     Neue Reservierung
                 </h3>
 
                 {date && (
-                    <p className="mt-1 text-sm text-zinc-500">
+                    <p className="mt-1 text-sm text-zinc-400">
                         Reservierung für den {formatDate(date)}
                     </p>
                 )}
@@ -236,7 +236,7 @@ const ReservationForm = ({
                     />
                 </div>
 
-                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
+                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3">
                     <input
                         id="chefOverride"
                         type="checkbox"
@@ -250,7 +250,7 @@ const ReservationForm = ({
                     />
 
                     <span>
-                        <span className="block text-sm font-medium text-zinc-800">
+                        <span className="block text-sm font-medium text-zinc-200">
                             Chef-Override
                         </span>
 
@@ -261,7 +261,7 @@ const ReservationForm = ({
                 </label>
 
                 {error && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    <div className="rounded-lg border border-red-900/50 bg-red-950/40 px-4 py-3 text-sm text-red-300">
                         {error}
                     </div>
                 )}
@@ -269,7 +269,7 @@ const ReservationForm = ({
                 <div className="flex justify-end">
                     <button
                         type="submit"
-                        className="rounded-lg bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700"
+                        className="rounded-lg bg-zinc-100 px-5 py-2.5 text-sm font-medium text-zinc-900 transition hover:bg-white"
                     >
                         Reservierung speichern
                     </button>
