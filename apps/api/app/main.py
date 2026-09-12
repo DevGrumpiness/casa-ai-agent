@@ -1,11 +1,22 @@
 from typing import Literal
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from app.auth import (
+    SESSION_COOKIE_NAME,
+    SESSION_TTL_SECONDS,
+    clear_failed_logins,
+    create_session_token,
+    is_login_rate_limited,
+    is_request_authenticated,
+    register_failed_login,
+    verify_password,
+)
 from app.database import settings
+from app.privacy import mask_reservation
 from app.reservations_db import (
     get_reservations,
     insert_reservation,
@@ -52,15 +63,23 @@ class ReservationStatusUpdate(BaseModel):
     status: Literal["pending", "confirmed"]
 
 
+class LoginRequest(BaseModel):
+    password: str
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
 @app.get("/reservations", response_model=list[Reservation])
-def get_reservations_endpoint() -> list[dict]:
+def get_reservations_endpoint(request: Request) -> list[dict]:
     reservations = get_reservations()
-    return reservations
+
+    if is_request_authenticated(request):
+        return reservations
+
+    return [mask_reservation(reservation) for reservation in reservations]
 
 
 @app.post("/reservations", response_model=Reservation, status_code=201)
@@ -112,3 +131,52 @@ def change_reservation_status(
         "id": reservation_id,
         "status": update.status,
     }
+
+
+@app.post("/auth/login")
+def login(payload: LoginRequest, request: Request, response: Response) -> dict[str, bool]:
+    client_ip = request.client.host if request.client else "unknown"
+
+    if is_login_rate_limited(client_ip):
+        raise HTTPException(
+            status_code=429,
+            detail="Zu viele Versuche. Bitte später erneut versuchen.",
+        )
+
+    if not settings.admin_password_hash or not verify_password(
+        payload.password, settings.admin_password_hash
+    ):
+        register_failed_login(client_ip)
+        raise HTTPException(status_code=401, detail="Ungültige Anmeldedaten")
+
+    clear_failed_logins(client_ip)
+
+    token = create_session_token(secret=settings.session_secret)
+    response.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=token,
+        max_age=SESSION_TTL_SECONDS,
+        httponly=True,
+        secure=settings.cookie_secure,
+        samesite=settings.cookie_samesite,
+        path="/",
+    )
+
+    return {"authenticated": True}
+
+
+@app.post("/auth/logout")
+def logout(response: Response) -> dict[str, bool]:
+    response.delete_cookie(
+        key=SESSION_COOKIE_NAME,
+        path="/",
+        secure=settings.cookie_secure,
+        samesite=settings.cookie_samesite,
+    )
+
+    return {"authenticated": False}
+
+
+@app.get("/auth/session")
+def session_status(request: Request) -> dict[str, bool]:
+    return {"authenticated": is_request_authenticated(request)}
