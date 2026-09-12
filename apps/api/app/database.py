@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     admin_password_hash: str | None = None
     session_secret: str = "dev-insecure-session-secret-change-me"
+    bff_proxy_secret: str | None = None
     model_config = SettingsConfigDict(env_file=".env")
 
     @property
@@ -16,8 +17,8 @@ class Settings(BaseSettings):
         return self.environment == "production"
 
     @property
-    def cookie_samesite(self) -> Literal["none", "lax"]:
-        return "none" if self.environment == "production" else "lax"
+    def cookie_samesite(self) -> Literal["lax"]:
+        return "lax"
 
 settings = Settings()  # pyright: ignore[reportCallIssue]
 

@@ -20,13 +20,10 @@ export default function Home() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/session`,
-          {
-            cache: "no-store",
-            credentials: "include",
-          }
-        );
+        const response = await fetch("/api/auth/session", {
+          cache: "no-store",
+          credentials: "include",
+        });
 
         const data = response.ok ? await response.json() : null;
         setIsAuthenticated(Boolean(data?.authenticated));
@@ -46,13 +43,10 @@ export default function Home() {
 
     const fetchReservations = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/reservations`,
-          {
-            cache: "no-store",
-            credentials: "include",
-          }
-        );
+        const response = await fetch("/api/reservations", {
+          cache: "no-store",
+          credentials: "include",
+        });
 
         if (!response.ok) {
           const responseText = await response.text();
@@ -76,14 +70,33 @@ export default function Home() {
     fetchReservations();
   }, [isAuthenticated]);
 
-  const handleUnlockSuccess = () => {
-    setShowUnlockModal(false);
-    setIsAuthenticated(true);
+  const handleUnlockSuccess = async (): Promise<boolean> => {
+    try {
+      const response = await fetch("/api/auth/session", {
+        cache: "no-store",
+        credentials: "include",
+      });
+
+      const data = response.ok ? await response.json() : null;
+      const authenticated = Boolean(data?.authenticated);
+
+      setIsAuthenticated(authenticated);
+
+      if (authenticated) {
+        setShowUnlockModal(false);
+      }
+
+      return authenticated;
+    } catch (error) {
+      console.error("Fehler beim Prüfen der Sitzung:", error);
+      setIsAuthenticated(false);
+      return false;
+    }
   };
 
   const handleLock = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+      await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
       });
