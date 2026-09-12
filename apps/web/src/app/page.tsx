@@ -2,7 +2,9 @@
 
 import { Reservation } from "@/types/reservations";
 import { useEffect, useMemo, useState } from "react";
+import AdminUnlockModal from "./adminUnlockModal";
 import ReservationForm from "./reservationForm";
+import VoiceAgentCard from "./voiceAgentCard";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -12,14 +14,43 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
 
   useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/session`,
+          {
+            cache: "no-store",
+            credentials: "include",
+          }
+        );
+
+        const data = response.ok ? await response.json() : null;
+        setIsAuthenticated(Boolean(data?.authenticated));
+      } catch (error) {
+        console.error("Fehler beim Prüfen der Sitzung:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkSession();
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated === null) {
+      return;
+    }
+
     const fetchReservations = async () => {
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/reservations`,
           {
             cache: "no-store",
+            credentials: "include",
           }
         );
 
@@ -43,7 +74,25 @@ export default function Home() {
     };
 
     fetchReservations();
-  }, []);
+  }, [isAuthenticated]);
+
+  const handleUnlockSuccess = () => {
+    setShowUnlockModal(false);
+    setIsAuthenticated(true);
+  };
+
+  const handleLock = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Fehler beim Sperren:", error);
+    } finally {
+      setIsAuthenticated(false);
+    }
+  };
 
   const toggleReservationStatus = async (reservation: Reservation) => {
     const newStatus =
@@ -54,6 +103,7 @@ export default function Home() {
         `${process.env.NEXT_PUBLIC_API_URL}/reservations/${reservation.id}/status`,
         {
           method: "PATCH",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -143,6 +193,40 @@ export default function Home() {
           </div>
         )}
 
+        <VoiceAgentCard />
+
+        <section className="mb-8 flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-zinc-900">
+              {isAuthenticated
+                ? "Personal data unlocked"
+                : "Personal data protected"}
+            </p>
+
+            <p className="mt-0.5 text-xs text-zinc-500">
+              {isAuthenticated
+                ? "Guest names, phone numbers and comments are shown in full."
+                : "Unlock to view guest names, phone numbers and comments."}
+            </p>
+          </div>
+
+          {isAuthenticated ? (
+            <button
+              onClick={handleLock}
+              className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+            >
+              Lock
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowUnlockModal(true)}
+              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700"
+            >
+              Unlock personal data
+            </button>
+          )}
+        </section>
+
         <section className="mb-8">
           <div className="mb-3 flex items-center gap-3">
             <h2 className="text-xl font-semibold">
@@ -188,7 +272,13 @@ export default function Home() {
                           {reservation.time}
                         </td>
 
-                        <td className="px-4 py-3">
+                        <td
+                          className={
+                            isAuthenticated
+                              ? "px-4 py-3"
+                              : "px-4 py-3 font-mono text-zinc-400"
+                          }
+                        >
                           {reservation.name}
                         </td>
 
@@ -196,12 +286,18 @@ export default function Home() {
                           {reservation.party_size}
                         </td>
 
-                        <td className="px-4 py-3">
+                        <td
+                          className={
+                            isAuthenticated
+                              ? "px-4 py-3"
+                              : "px-4 py-3 font-mono text-zinc-400"
+                          }
+                        >
                           {reservation.phone_number}
                         </td>
 
                         <td className="max-w-xs truncate px-4 py-3 text-zinc-500">
-                          {reservation.comment || "–"}
+                          {isAuthenticated ? reservation.comment || "–" : "🔒"}
                         </td>
 
                         <td className="px-4 py-3">
@@ -335,7 +431,13 @@ export default function Home() {
                           {reservation.time}
                         </td>
 
-                        <td className="px-4 py-3">
+                        <td
+                          className={
+                            isAuthenticated
+                              ? "px-4 py-3"
+                              : "px-4 py-3 font-mono text-zinc-400"
+                          }
+                        >
                           {reservation.name}
                         </td>
 
@@ -343,12 +445,18 @@ export default function Home() {
                           {reservation.party_size}
                         </td>
 
-                        <td className="px-4 py-3">
+                        <td
+                          className={
+                            isAuthenticated
+                              ? "px-4 py-3"
+                              : "px-4 py-3 font-mono text-zinc-400"
+                          }
+                        >
                           {reservation.phone_number}
                         </td>
 
                         <td className="max-w-xs truncate px-4 py-3 text-zinc-500">
-                          {reservation.comment || "–"}
+                          {isAuthenticated ? reservation.comment || "–" : "🔒"}
                         </td>
 
                         <td className="px-4 py-3">
@@ -401,6 +509,13 @@ export default function Home() {
           </div>
         </section>
       </main>
+
+      {showUnlockModal && (
+        <AdminUnlockModal
+          onClose={() => setShowUnlockModal(false)}
+          onSuccess={handleUnlockSuccess}
+        />
+      )}
     </div>
   );
 }
