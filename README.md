@@ -99,7 +99,7 @@ Voice Demo Video: `<URL>`
 
 This is a proof of concept built to demonstrate the architecture, not a production system. Intentionally out of scope:
 
-- Authentication
+- User accounts, roles or OAuth (a lightweight single-admin session unlock protects personal data instead)
 - Reservation cancellation or modification
 - Table management
 - Time slot / availability logic
